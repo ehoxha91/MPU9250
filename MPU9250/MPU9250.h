@@ -66,7 +66,6 @@ public:
 	//Calculate, combine and filter final angles.
 	float angle_x, angle_y, angle_z;
 	void GetAngles(short address, float period);
-	
 
 	~MPU9250();
 };

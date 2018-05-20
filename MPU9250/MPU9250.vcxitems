@@ -4,6 +4,7 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
     <ItemsProjectGuid>{75f041df-fbc7-4b4c-814a-af565b87f265}</ItemsProjectGuid>
+    <ItemsProjectName>MPU9250_PID</ItemsProjectName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -20,5 +21,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)MPU9250.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)PID_Controller.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)PID_Controller.h" />
   </ItemGroup>
 </Project>
