@@ -198,7 +198,7 @@ void MPU9250::inicialization(short address = MPU_ADDRESS, short GYRO_CONFIG = MP
 	FS_ACCEL_SEL = Wire.read();
 }
 
-void MPU9250::gyroAngle(short address = MPU_ADDRESS, float period)
+void MPU9250::gyroAngle(short address = MPU_ADDRESS, float period = 0.004)
 {
 	MPU9250::readGyro(address);
 
