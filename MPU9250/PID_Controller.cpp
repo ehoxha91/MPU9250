@@ -6,7 +6,7 @@ void PID_Controller::CalculatePID(float _setpoint, float _realvalue, float delta
 
 	P = error * Kp;
 
-	I = I + I * Ki*deltaTime;
+	I = I +Ki*error*deltaTime;
 	if (I > antiwindup_I)
 		I = antiwindup_I;
 	else if (I < -antiwindup_I)
