@@ -1,13 +1,13 @@
 /*
- Name:		MPU9250.cpp
- Created:	4/1/2018 6:31:14 PM
- Author:	Ejup Hoxha
-			UNIVERSITY OF PRISHTINA, KOSOVO
-			FACULTY OF ELECTRICAL AND COMPUTER ENGINEERING
-			COMPUTERIZED AUTOMATION AND ROBOTICS
-			Pitch  - x axis
-			Roll   - y axis
-			Yaw    - z axis
+Name:		MPU9250.cpp
+Created:	4/1/2018 6:31:14 PM
+Author:	Ejup Hoxha
+UNIVERSITY OF PRISHTINA, KOSOVO
+FACULTY OF ELECTRICAL AND COMPUTER ENGINEERING
+COMPUTERIZED AUTOMATION AND ROBOTICS
+Pitch  - x axis
+Roll   - y axis
+Yaw    - z axis
 */
 
 #include "MPU9250.h"
@@ -90,7 +90,18 @@ MPU9250::MPU9250()
 {
 }
 
-void MPU9250::readGyro(short address = MPU_ADDRESS)
+void MPU9250::readGyro()
+{
+	Wire.beginTransmission(MPU_ADDRESS);
+	Wire.write(MPU9250_GYRO_XOUT_H); //Start reading from gyro_xout_h address = 0x43
+	Wire.endTransmission();
+	Wire.requestFrom(MPU_ADDRESS, 6);
+	while (Wire.available() < 6);
+	raw_gyro_x = Wire.read() << 8 | Wire.read();
+	raw_gyro_y = Wire.read() << 8 | Wire.read();
+	raw_gyro_z = Wire.read() << 8 | Wire.read();
+}
+void MPU9250::readGyro(short address)
 {
 	Wire.beginTransmission(address);
 	Wire.write(MPU9250_GYRO_XOUT_H); //Start reading from gyro_xout_h address = 0x43
@@ -102,7 +113,17 @@ void MPU9250::readGyro(short address = MPU_ADDRESS)
 	raw_gyro_z = Wire.read() << 8 | Wire.read();
 }
 
-void MPU9250::readTemp(short address = MPU_ADDRESS)
+void MPU9250::readTemp()
+{
+	Wire.beginTransmission(MPU_ADDRESS);
+	Wire.write(MPU9250_TEMP_OUT_H);
+	Wire.endTransmission();
+	Wire.requestFrom(MPU_ADDRESS, 2);
+	while (Wire.available() < 2);
+	raw_temperature = Wire.read() << 8 | Wire.read();
+	temperature = (raw_temperature - 20) / 333.87 + 21.0;
+}
+void MPU9250::readTemp(short address)
 {
 	Wire.beginTransmission(address);
 	Wire.write(MPU9250_TEMP_OUT_H);
@@ -112,7 +133,18 @@ void MPU9250::readTemp(short address = MPU_ADDRESS)
 	raw_temperature = Wire.read() << 8 | Wire.read();
 }
 
-void MPU9250::readAccelerometer(short address = MPU_ADDRESS)
+void MPU9250::readAccelerometer()
+{
+	Wire.beginTransmission(MPU_ADDRESS);
+	Wire.write(MPU9250_ACCEL_XOUT_H); //Start reading from gyro_xout_h address = 0x43
+	Wire.endTransmission();
+	Wire.requestFrom(MPU_ADDRESS, 6);
+	while (Wire.available() < 6);
+	raw_accel_x = Wire.read() << 8 | Wire.read();
+	raw_accel_y = Wire.read() << 8 | Wire.read();
+	raw_accel_z = Wire.read() << 8 | Wire.read();
+}
+void MPU9250::readAccelerometer(short address)
 {
 	Wire.beginTransmission(address);
 	Wire.write(MPU9250_ACCEL_XOUT_H); //Start reading from gyro_xout_h address = 0x43
@@ -124,7 +156,18 @@ void MPU9250::readAccelerometer(short address = MPU_ADDRESS)
 	raw_accel_z = Wire.read() << 8 | Wire.read();
 }
 
-void MPU9250::readMagnetometer(short address = MPU_ADDRESS)
+void MPU9250::readMagnetometer()
+{
+	Wire.beginTransmission(MPU9250_MAG_ADDRESS);
+	Wire.write(MPU9250_MAG_XOUT_H);
+	Wire.endTransmission();
+	Wire.requestFrom(MPU9250_MAG_ADDRESS, 6);
+	while (Wire.available() < 6);
+	raw_mag_x = Wire.read() << 8 | Wire.read();
+	raw_mag_y = Wire.read() << 8 | Wire.read();
+	raw_mag_z = Wire.read() << 8 | Wire.read();
+}
+void MPU9250::readMagnetometer(short address)
 {
 	Wire.beginTransmission(address);
 	Wire.write(MPU9250_MAG_XOUT_H);
@@ -136,7 +179,32 @@ void MPU9250::readMagnetometer(short address = MPU_ADDRESS)
 	raw_mag_z = Wire.read() << 8 | Wire.read();
 }
 
-void MPU9250::calibrateMPU(short address = MPU_ADDRESS)
+void MPU9250::calibrateMPU()
+{
+	for (int i = 0; i < gyroCalibrationRate; i++)
+	{
+		MPU9250::readGyro();
+		gyroCalibrationData[0] += raw_gyro_x;
+		gyroCalibrationData[1] += raw_gyro_y;
+		gyroCalibrationData[2] += raw_gyro_z;
+	}
+	for (int i = 0; i < 3; i++)
+	{
+		gyroCalibrationData[i] /= gyroCalibrationRate;
+	}
+	//MPU9250::accelerometerAngle(0);
+	//gyroCalibrationData[3] = accel_ang_x;
+	//gyroCalibrationData[4] = accel_ang_y;
+	//if (gyroCalibrationData[4] > 10.0 || gyroCalibrationData[5] > 10.0 || gyroCalibrationData[4] < -10.0 || gyroCalibrationData[5] <-10.0)
+	//{
+	//	for (int i = 3; i < 5; i++)
+	//	{
+	//		gyroCalibrationData[i] = -99;
+	//		Serial.println("Error Calibrating Accelerometer! Please position the SENSOR in a level surface or check the mounting!");
+	//	}
+	//}
+}
+void MPU9250::calibrateMPU(short address)
 {
 	for (int i = 0; i < gyroCalibrationRate; i++)
 	{
@@ -163,7 +231,41 @@ void MPU9250::calibrateMPU(short address = MPU_ADDRESS)
 
 }
 
-void MPU9250::inicialization(short address = MPU_ADDRESS, short GYRO_CONFIG = MPU9250_GYRO_CONFIG, short FS_GYRO = MPU9250_GYRO_FULL_SCALE_500DPS, short ACCEL_CONFIG = MPU9250_ACCEL_CONFIG, short AFS_ACCEL = MPU9250_FULL_SCALE_16G)
+void MPU9250::inicialization(short GYRO_CONFIG, short FS_GYRO, short ACCEL_CONFIG, short AFS_ACCEL)
+{
+	Wire.beginTransmission(MPU_ADDRESS);
+	Wire.write(0x6B);
+	Wire.write(0x00);
+	Wire.endTransmission();
+
+	Wire.beginTransmission(MPU_ADDRESS);
+	Wire.write(GYRO_CONFIG); // Regjistri per konfigurim te gyroskopit FS_SEL;
+	Wire.write(FS_GYRO); // Zgjedhet modi 500deg/sekond apo 65.5 LSB/(º/s)
+	Wire.endTransmission();
+
+
+	//Konfigurimi i Accelerometer
+	Wire.beginTransmission(MPU_ADDRESS);
+	Wire.write(ACCEL_CONFIG); // Regjistri per konfigurim te accelerometrit AFS_SEL;
+	Wire.write(AFS_ACCEL); // Zgjedhet modi (+/- 8g) 4096 LSB/gravitet
+	Wire.endTransmission();
+
+	//Konfigurimi i LOW PASS FILTER
+	Wire.beginTransmission(MPU_ADDRESS);
+	Wire.write(0x1A); // Regjistri qe duhet konfiguruar per te caktuar frekuencen e LPF
+	Wire.write(0x01); // 5Hz - 0x06; 0x01 -184Hz; 0x00 - 260Hz;
+	Wire.endTransmission();
+
+	Wire.beginTransmission(MPU_ADDRESS);
+	Wire.write(0x1A);
+	Wire.endTransmission();      //Leximi i FS_GYRO_SEL, FS_ACCEL_SEL DHE LPF
+	Wire.requestFrom(0x68, 3);
+	while (Wire.available() < 3);
+	LPF = Wire.read();
+	FS_GYRO_SEL = Wire.read();
+	FS_ACCEL_SEL = Wire.read();
+}
+void MPU9250::inicialization(short address, short GYRO_CONFIG, short FS_GYRO, short ACCEL_CONFIG, short AFS_ACCEL)
 {
 	Wire.beginTransmission(address);
 	Wire.write(0x6B);
@@ -198,13 +300,20 @@ void MPU9250::inicialization(short address = MPU_ADDRESS, short GYRO_CONFIG = MP
 	FS_ACCEL_SEL = Wire.read();
 }
 
-void MPU9250::gyroAngle(short address = MPU_ADDRESS, float period)
+void MPU9250::gyroAngle(short address, float period)
 {
-	MPU9250::readGyro(address);
+	if (address == 0)
+	{
+		MPU9250::readGyro();
+	}
+	else
+	{
+		MPU9250::readGyro(address);
+	}
 
 	raw_gyro_x -= gyroCalibrationData[0];
 	raw_gyro_y -= gyroCalibrationData[1];
-	raw_gyro_z -= gyroCalibrationData[2]; 
+	raw_gyro_z -= gyroCalibrationData[2];
 	float _calc;
 	switch (FS_GYRO_SEL)
 	{
@@ -218,7 +327,7 @@ void MPU9250::gyroAngle(short address = MPU_ADDRESS, float period)
 	case (int)0x08:
 		//65.5
 		gyro_ang_x += raw_gyro_x * (period / 65.5);
-		gyro_ang_y += raw_gyro_y* (period / 65.5);
+		gyro_ang_y += raw_gyro_y * (period / 65.5);
 		gyro_ang_z += raw_gyro_z * (period / 65.5);
 		_calc = period / 65.5;
 		break;
@@ -226,7 +335,7 @@ void MPU9250::gyroAngle(short address = MPU_ADDRESS, float period)
 		//32.8
 		gyro_ang_x += raw_gyro_x * (period / 32.8);
 		gyro_ang_y += raw_gyro_y * (period / 32.8);
-		gyro_ang_z += raw_gyro_z * (period / 32.8);		
+		gyro_ang_z += raw_gyro_z * (period / 32.8);
 		_calc = period / 32.8;
 		break;
 	case (int)0x18:
@@ -247,15 +356,23 @@ void MPU9250::gyroAngle(short address = MPU_ADDRESS, float period)
 	gyro_ang_x += gyro_ang_y * sin(raw_gyro_z*(_calc*to_rad));
 	gyro_ang_y -= gyro_ang_x * sin(raw_gyro_z*(_calc*to_rad));
 }
-void MPU9250::accelerometerAngle(short address = MPU_ADDRESS)
+void MPU9250::accelerometerAngle(short address)
 {
-	MPU9250::readAccelerometer(address);
+	if (address == 0)
+	{
+		MPU9250::readAccelerometer();
+	}
+	else
+	{
+		MPU9250::readAccelerometer(address);
+	}
 	float magnitude = sqrt(pow(raw_accel_x, 2) + pow(raw_accel_y, 2) + pow(raw_accel_z, 2));
 	accel_ang_x = asin((float)raw_accel_y / (float)magnitude)*to_deg;
 	accel_ang_y = asin((float)raw_accel_x / (float)magnitude)*(-to_deg);
+
 }
 
-void MPU9250::GetAngles(short address = MPU_ADDRESS, float period)
+void MPU9250::GetAngles(short address, float period)
 {
 	gyroAngle(address, period);
 	accelerometerAngle(address);
